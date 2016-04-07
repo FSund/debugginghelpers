@@ -1,5 +1,3 @@
-! Warning: There seems to be a bug when viewing large Armadillo objects/matrices (larger than `maxDisplayItems`). A hack to fix this is to increase `maxDisplayItems` to something larger than `n_cols` and `n_rows`. I hope to write a proper fix for this soon.
-
 # debugginghelpers
 Extra Debugging Helpers for QtCreator.  
 Currently only has helpers for Armadillo (a C++ linear algebra library).
