@@ -32,46 +32,51 @@ def qdump__arma__Col(d, value):
                         p += 1
 
 def qdump__arma__Mat(d, value):
+    # mat(n_rows, n_cols)
+
     array = value["mem"]
     cols = value["n_cols"]
     rows = value["n_rows"]
-    maxDisplayItems = 151
-    numDisplayItemsCols = min(maxDisplayItems, cols)
-    numDisplayItemsRows = min(maxDisplayItems, rows)
+
+    maxDisplayItems = 50
     innerType = d.templateArgument(value.type, 0)
     p = gdb.Value(array.cast(innerType.pointer()))
-    d.putValue('[%dx%d] @0x%x' % (rows, cols, p.dereference().address))
+
+    d.putValue('Mat [%dx%d] @0x%x' % (rows, cols, p.dereference().address))
     d.putAddress(value.address)
     d.putNumChild(3)
     with dumper.Children(d):
         d.putSubItem("n_cols", cols)
         d.putSubItem("n_rows", rows)
         with dumper.SubItem(d, "mem_local"):
-            d.putItemCount(numDisplayItemsCols)
-            d.putNumChild(numDisplayItemsCols)
-            d.putType("[%dx%d %s]" %(rows, cols, innerType))
+    # cols -------------------------------------------------------------------------------------- #
+            d.putItemCount(cols)
+            d.putNumChild(cols)
             if d.isExpanded():
+                numDisplayItems = min(maxDisplayItems, cols)
                 with dumper.Children(d, 
-                        numChild=cols, # To get "<incomplete>" at bottom
-                        maxNumChild=maxDisplayItems,
-                        childType="[%d %s]" %(cols, innerType),
-                        ):
-                    for i in range(0, cols):
-                        if i < numDisplayItemsCols:
-                            with dumper.Children(d):
-                                if d.isExpanded():
-                                    with dumper.Children(d,
-                                            numChild=rows, # To get "<incomplete>" at bottom
-                                            maxNumChild=maxDisplayItems,
-                                            childType=innerType,
-                                            ):
-                                        for j in range(0, rows):
-                                            if j < numDisplayItemsRows:
-                                                d.putSubItem(j, p.dereference())
-                                            p += 1
-                        else:
-                            for j in range(0, rows):
-                                p += 1
+                        numChild = cols,
+                        maxNumChild = numDisplayItems,
+                        childType = "<column>",
+                        addrBase = p,
+                        addrStep = p.dereference().__sizeof__):
+                    for j in range(0, int(cols)):
+                        with dumper.Children(d):
+    # rows -------------------------------------------------------------------------------------- #
+                            # d.putItemCount(rows)
+                            # d.putNumChild(rows)
+                            if d.isExpanded():
+                                numDisplayItems = min(maxDisplayItems, rows)
+                                with dumper.Children(d, 
+                                        numChild = rows,
+                                        maxNumChild = numDisplayItems,
+                                        childType = innerType,
+                                        addrBase = p,
+                                        addrStep = p.dereference().__sizeof__):
+                                    for k in range(0, int(rows)):
+                                        if j < maxDisplayItems and k < maxDisplayItems:
+                                            d.putSubItem(k, p.dereference())
+                                        p += 1
 
 def qdump__arma__Cube(d, value):
     # cube(n_rows, n_cols, n_slices)
@@ -95,7 +100,7 @@ def qdump__arma__Cube(d, value):
         with dumper.SubItem(d, "mem_local"):
             # d.putType("[%dx%d %s]" %(rows, cols, innerType))
 
-            # slices ------------------------------------------------------------------------------------ #
+    # slices ------------------------------------------------------------------------------------ #
             d.putItemCount(slices)
             d.putNumChild(slices)
             if d.isExpanded():
@@ -108,7 +113,7 @@ def qdump__arma__Cube(d, value):
                         addrStep = p.dereference().__sizeof__):
                     for i in range(0, int(slices)):
                         with dumper.Children(d):
-            # cols -------------------------------------------------------------------------------------- #
+    # cols -------------------------------------------------------------------------------------- #
                             # d.putItemCount(cols)
                             # d.putNumChild(cols)
                             if d.isExpanded():
@@ -121,7 +126,7 @@ def qdump__arma__Cube(d, value):
                                         addrStep = p.dereference().__sizeof__):
                                     for j in range(0, int(cols)):
                                         with dumper.Children(d):
-            # rows -------------------------------------------------------------------------------------- #
+    # rows -------------------------------------------------------------------------------------- #
                                             # d.putItemCount(rows)
                                             # d.putNumChild(rows)
                                             if d.isExpanded():
