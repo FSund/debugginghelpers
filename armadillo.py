@@ -7,7 +7,7 @@ from dumper import * # this makes everything work, usually
 def qdump__arma__Col(d, value):
     array = value["mem"]
     size = value["n_elem"]
-    maxDisplayItems = 50
+    maxDisplayItems = 300
     innerType = d.templateArgument(value.type, 0)
     p = gdb.Value(array.cast(innerType.pointer()))
     d.putValue('[%d] @0x%x' % (size, p.dereference().address))
@@ -38,7 +38,7 @@ def qdump__arma__Mat(d, value):
     cols = value["n_cols"]
     rows = value["n_rows"]
 
-    maxDisplayItems = 50
+    maxDisplayItems = 300
     innerType = d.templateArgument(value.type, 0)
     p = gdb.Value(array.cast(innerType.pointer()))
 
@@ -86,7 +86,7 @@ def qdump__arma__Cube(d, value):
     rows = value["n_rows"]
     slices = value["n_slices"]
 
-    maxDisplayItems = 50
+    maxDisplayItems = 300
     innerType = d.templateArgument(value.type, 0)
     p = gdb.Value(array.cast(innerType.pointer()))
 
